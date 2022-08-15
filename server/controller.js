@@ -22,11 +22,8 @@ module.exports = {
                 name varchar,
                 rating integer,
                 country_id integer
-            )`)
+            )
 
-//ok seriously why did they tell me to put another sequelize.query here inside the seed function? Just readability to separate sql function stuff?
-            
-            sequelize.query(`
             insert into countries (name)
             values ('Afghanistan'),
             ('Albania'),
@@ -246,31 +243,33 @@ module.exports = {
         console.log(`${name}, ${rating}, ${countryId}`)
         //destructure works
         sequelize.query(`INSERT INTO cities (name, rating, country_id)
-        VALUES (${name}, ${rating}, ${countryId})`)
+        VALUES ('${name}', ${rating}, ${countryId})`)
         //i think sequelize works, i tested it on pg web inserting random stuff into values
         //i believe something is wrong with my .then but i have no idea what it is
         .then(dbRes => {
             console.log("am i even exist");
             res.status(200).send(dbRes[0])})
-    }
+    },
 
-    // getCities: (req,res) => {
+    getCities: (req,res) => {
 
-    //     //uh how do i select two things???
-    //     sequelize.query(`SELECT cities.city_id, cities.name, cities.rating FROM cities`)
-    //     sequelize.query(`SELECT countries.country_id, countries.name FROM countries
-    //     JOIN countries ON countries.country_id = city.country_id`)
-    //     //i'd like to add a where cities.name = not null but i'm not sure how or if it's even necessary
-    //     .then(dbRes => {
-    //         console.log("getting cities");
-    //         res.status(200).send(dbRes[0])})
-    // },
+        sequelize.query(`SELECT cities.city_id, cities.name AS city, cities.rating, countries.country_id, countries.name AS country 
+        FROM cities
+        JOIN countries 
+        ON countries.country_id = cities.country_id
+        ORDER BY rating DESC`)
+        .then(dbRes => {
+            console.log("getting cities");
+            res.status(200).send(dbRes[0])})
+    },
 
-    // deleteCity: (req,res) => {
-    //     sequelize.query(`DELETE FROM cities
-    //     WHERE cities.city_id = ${req.params}`)
-    //     .then(dbRes => {
-    //         console.log("I really wish they wouldn't name two files index.js");
-    //         res.status(200).send(dbRes[0])})
-
+    deleteCity: (req,res) => {
+        let {id} = req.params
+        console.log(req.params + id)
+        sequelize.query(`DELETE FROM cities
+        WHERE cities.city_id = ${id}`)
+        .then(dbRes => {
+            console.log("I really wish they wouldn't name two files index.js");
+            res.status(200).send(dbRes[0])})
+        }
 }
